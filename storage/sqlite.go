@@ -79,6 +79,35 @@ func (s *Storage) AddArtist(artist Artist) error {
 	return nil
 }
 
+func (s *Storage) GetArtists() (*ArtistStack, error) {
+	as := NewArtistStack()
+
+	rows, err := s.dot.Query(s.db, "select-artists")
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		a := Artist{}
+		err := rows.Scan(&a.ID, &a.Name)
+
+		if err != nil {
+			continue
+		}
+
+		if rows.Err() != nil {
+			continue
+		}
+
+		as.Add(a.ID, a.Name)
+	}
+
+	return as, nil
+}
+
 func (s *Storage) AddArtistToTrack(artistID string, trackID string) error {
 	_, err := s.dot.Exec(s.db, "insert-artist-to-track", nil, artistID, trackID)
 
@@ -89,17 +118,17 @@ func (s *Storage) AddArtistToTrack(artistID string, trackID string) error {
 	return nil
 }
 
-func (s *Storage) AddGenre(genre string) error {
-	_, err := s.dot.Exec(s.db, "insert-genre", nil, genre)
+func (s *Storage) AddGenre(genre string) (int64, error) {
+	res, err := s.dot.Exec(s.db, "insert-genre", nil, genre)
 
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	return nil
+	return res.LastInsertId()
 }
 
-func (s *Storage) AddArtistToGenre(artistID string, genreID string) error {
+func (s *Storage) AddArtistToGenre(artistID string, genreID int64) error {
 	_, err := s.dot.Exec(s.db, "insert-artists-to-genres", nil, artistID, genreID)
 
 	if err != nil {

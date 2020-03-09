@@ -34,7 +34,7 @@ CREATE TABLE artists
 CREATE TABLE genres
 (
     id   INTEGER PRIMARY KEY AUTOINCREMENT,
-    name VARCHAR(255) NOT NULL
+    name VARCHAR(255) UNIQUE NOT NULL
 );
 
 -- name: create-table-artists-to-tracks
@@ -65,6 +65,10 @@ INSERT OR
 REPLACE
 INTO artists
 VALUES (?, ?);
+
+-- name: select-artists
+SELECT id, name
+FROM artists;
 
 -- name: insert-genre
 INSERT OR

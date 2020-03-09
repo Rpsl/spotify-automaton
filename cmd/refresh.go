@@ -68,6 +68,7 @@ func (c *ContextApp) dbRefresh() {
 
 	c.insertTracks(ts)
 	c.insertArtists(as)
+	c.updateGenres()
 }
 
 func (c *ContextApp) insertTracks(ts *storage.TrackStack) {
@@ -79,7 +80,7 @@ func (c *ContextApp) insertTracks(ts *storage.TrackStack) {
 		}
 
 		for _, a := range t.Artists {
-			err := c.storage.AddArtistToTrack(t.ID, a)
+			err := c.storage.AddArtistToTrack(a, t.ID)
 
 			if err != nil {
 				log.Errorf("error insert artist to track %s -> %s :: %v", t.ID, a, err)
@@ -88,7 +89,6 @@ func (c *ContextApp) insertTracks(ts *storage.TrackStack) {
 	}
 }
 
-// todo: holy shit. i need a sleep. an rewrite that
 func (c *ContextApp) insertArtists(as *storage.ArtistStack) {
 	for _, a := range as.Artists {
 		err := c.storage.AddArtist(a)
@@ -97,29 +97,46 @@ func (c *ContextApp) insertArtists(as *storage.ArtistStack) {
 			log.Errorf("error insert artist %s :: %v", a.ID, err)
 		}
 	}
+}
 
-	i := 0
+func (c *ContextApp) updateGenres() {
+	as, err := c.storage.GetArtists()
 
-	var ids []string
+	if err != nil {
+		log.Errorf("error select artist :: %v", err)
+	}
+
+	var (
+		i      = 0
+		chunk  []string
+		chunks [][]string
+	)
 
 	for _, a := range as.Artists {
+		chunk = append(chunk, a.ID)
 		i++
 
-		ids = append(ids, a.ID)
-
-		if i == 50 {
-			res, err := c.spotify.Artists(ids)
+		if len(chunk) == 50 {
 			i = 0
-			ids = nil
 
-			if err != nil {
-				log.Errorf("error get full artist :: %v", err)
-			}
+			chunks = append(chunks, chunk)
+		}
+	}
 
-			for _, fa := range res {
-				for _, fag := range fa.Genres {
-					c.storage.AddGenre(fag)
-					c.storage.AddArtistToGenre(fa.ID.String(), fag)
+	for _, ids := range chunks {
+		artists, err := c.spotify.Artists(ids)
+
+		if err != nil {
+			log.Errorf("error get full artist :: %v", err)
+		}
+
+		for _, artist := range artists {
+			for _, genre := range artist.Genres {
+				insID, _ := c.storage.AddGenre(genre)
+				err = c.storage.AddArtistToGenre(artist.ID.String(), insID)
+
+				if err != nil {
+					log.Errorf("error add artist to genre :: %v", err)
 				}
 			}
 		}
