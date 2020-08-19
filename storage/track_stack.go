@@ -7,6 +7,7 @@ type Track struct {
 	Explicit   bool
 	Popularity int
 	Artists    []string
+	AddedAt    string
 }
 
 type TrackStack struct {
@@ -20,7 +21,7 @@ func NewTrackStack() *TrackStack {
 	return &ts
 }
 
-func (t *TrackStack) Add(id string, name string, duration int, explicit bool, popularity int, artists []string) {
+func (t *TrackStack) Add(id string, name string, duration int, explicit bool, popularity int, artists []string, added string) {
 	t.Tracks[id] = Track{
 		ID:         id,
 		Name:       name,
@@ -28,5 +29,6 @@ func (t *TrackStack) Add(id string, name string, duration int, explicit bool, po
 		Explicit:   explicit,
 		Popularity: popularity,
 		Artists:    artists,
+		AddedAt:    added,
 	}
 }

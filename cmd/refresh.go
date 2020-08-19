@@ -63,7 +63,7 @@ func (c *ContextApp) dbRefresh() {
 			artists = append(artists, a.ID.String())
 		}
 
-		ts.Add(track.ID.String(), track.Name, track.Duration, track.Explicit, track.Popularity, artists)
+		ts.Add(track.ID.String(), track.Name, track.Duration, track.Explicit, track.Popularity, artists, track.AddedAt)
 	}
 
 	c.insertTracks(ts)
@@ -120,8 +120,13 @@ func (c *ContextApp) updateGenres() {
 			i = 0
 
 			chunks = append(chunks, chunk)
+
+			chunk = []string{}
 		}
 	}
+
+	// last chunk
+	chunks = append(chunks, chunk)
 
 	for _, ids := range chunks {
 		artists, err := c.spotify.Artists(ids)

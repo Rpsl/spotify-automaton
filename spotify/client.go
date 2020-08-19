@@ -30,8 +30,8 @@ func New(config *config.Config) *Client {
 }
 
 // todo spotify.* to TrackStack
-func (c *Client) SavedTracks() ([]spotify.FullTrack, error) {
-	var userTracks []spotify.FullTrack
+func (c *Client) SavedTracks() ([]spotify.SavedTrack, error) {
+	var userTracks []spotify.SavedTrack
 
 	tracks, err := c.sp.CurrentUsersTracks()
 
@@ -41,7 +41,7 @@ func (c *Client) SavedTracks() ([]spotify.FullTrack, error) {
 
 	for {
 		for _, track := range tracks.Tracks {
-			userTracks = append(userTracks, track.FullTrack)
+			userTracks = append(userTracks, track)
 		}
 
 		err = c.sp.NextPage(tracks)

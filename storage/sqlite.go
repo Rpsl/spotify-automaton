@@ -60,7 +60,7 @@ func (s *Storage) Init() error {
 }
 
 func (s *Storage) AddTrack(track Track) error {
-	_, err := s.dot.Exec(s.db, "insert-track", track.ID, track.Name, track.Duration, track.Explicit, track.Popularity)
+	_, err := s.dot.Exec(s.db, "insert-track", track.ID, track.Name, track.Duration, track.Explicit, track.Popularity, track.AddedAt)
 
 	if err != nil {
 		return err
